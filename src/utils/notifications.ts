@@ -1,6 +1,14 @@
 
 import nodemailer from 'nodemailer';
 
+import { Server as SocketIOServer } from 'socket.io';
+
+let io: SocketIOServer;
+
+export function initializeSocketIO(socketIOInstance: SocketIOServer) {
+    io = socketIOInstance;
+}
+
 export const sendVerificationEmail = async (email: string, verificationToken: string) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail', // Or use any other email service
@@ -24,6 +32,9 @@ export const sendVerificationEmail = async (email: string, verificationToken: st
 };
 
 export const sendNotification = async (userId: number, message: string) => {
-    // Implement real-time notification logic
-    console.log(`Notification to user ${userId}: ${message}`);
+    if (!io) {
+        throw new Error('SocketIO instance not initialized');
+    }
+
+    io.to(`user-${userId}`).emit('notification', message);
 };
